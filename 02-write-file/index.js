@@ -12,20 +12,17 @@ const rl = readline.createInterface({
 
 console.log('Welcome! Type your text (If you want to quit and exit process, type "exit" or press "Ctrl+C"):');
 
-// Handle user input
 rl.on('line', (input) => {
   if (input.trim().toLowerCase() === 'exit') {
-    farewellMessage();
+    endingMessage();
   } else {
     writeStream.write(`${input}\n`);
   }
 });
 
-// Handle Ctrl+C event
-process.on('SIGINT', farewellMessage);
+process.on('SIGINT', endingMessage);
 
-// Display farewell message and close resources
-function farewellMessage() {
+function endingMessage() {
   console.log('\nThank you! This is end!');
   rl.close();
   writeStream.end();
