@@ -63,27 +63,30 @@ function buildHtml() {
 }
 
 function mergeStyles() {
-  fs.readdir(stylesDir, { withFileTypes: true }, (err, files) => {
-    if (err) return;
-
-    const cssFiles = files.filter(file => file.isFile() && path.extname(file.name) === '.css');
-
-    let stylesData = '';
-    cssFiles.forEach((file, index) => {
-      const filePath = path.join(stylesDir, file.name);
-
-      fs.readFile(filePath, 'utf8', (err, data) => {
-        if (err) return;
-
-        stylesData += data + '\n';
-
-        if (index === cssFiles.length - 1) {
-          fs.writeFile(outputCss, stylesData, () => {});
-        }
-      });
+    fs.readdir(stylesDir, { withFileTypes: true }, (err, files) => {
+      if (err) return;
+  
+      const cssFiles = files
+        .filter(file => file.isFile() && path.extname(file.name) === '.css')
+        .map(file => path.join(stylesDir, file.name));
+  
+      const readPromises = cssFiles.map(filePath =>
+        new Promise((resolve, reject) => {
+          fs.readFile(filePath, 'utf8', (err, data) => {
+            if (err) reject(err);
+            else resolve(data);
+          });
+        })
+      );
+  
+      Promise.all(readPromises)
+        .then(contents => {
+          const mergedStyles = contents.join('\n');
+          fs.writeFile(outputCss, mergedStyles, () => {});
+        })
+        .catch(() => {});
     });
-  });
-}
+  }
 
 function copyAssets(src, dest) {
   fs.mkdir(dest, { recursive: true }, (err) => {
