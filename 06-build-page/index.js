@@ -15,7 +15,24 @@ fs.mkdir(projectDist, { recursive: true }, (err) => {
 
   buildHtml();
   mergeStyles();
+  cleanDirectory(outputAssets)
+    .then(() => copyAssets(assetsDir, outputAssets))
+    .catch(() => {});
 });
+
+function cleanDirectory(dirPath) {
+  return new Promise((resolve, reject) => {
+    fs.rm(dirPath, { recursive: true, force: true }, (err) => {
+      if (err) reject(err);
+      else {
+        fs.mkdir(dirPath, { recursive: true }, (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      }
+    });
+  });
+}
 
 function buildHtml() {
   fs.readFile(templateFile, 'utf8', (err, template) => {
